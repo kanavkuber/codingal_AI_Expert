@@ -47,69 +47,91 @@ def player_choice():
 # ==========================================================
 def player_move(board, symbol):
 
-    while True:
-        move = input(Fore.GREEN + "Choose a position (1-9): " + Style.RESET_ALL)
+    choice = -1
 
-        if move.isdigit():
-            move = int(move)
+    while choice not in range(1, 10) or not board[choice - 1].isdigit():
 
-            if 1 <= move <= 9:
-                if board[move - 1] not in ['X', 'O']:
-                    board[move - 1] = symbol
-                    break
-                else:
-                    print(Fore.RED + "That position is already taken.")
-            else:
-                print(Fore.RED + "Enter a number between 1 and 9.")
-        else:
-            print(Fore.RED + "Invalid input. Please enter a number.")
+        try:
+
+            choice = int(input(
+                Fore.GREEN + "Choose your spot (1-9): " + Style.RESET_ALL
+            ))
+
+            if choice not in range(1, 10) or not board[choice - 1].isdigit():
+
+                print(
+                    Fore.RED + "That move isn't available. Try again."
+                    + Style.RESET_ALL
+                )
+
+        except ValueError:
+
+            print(
+                Fore.RED + "Please enter a valid number from 1 to 9."
+                + Style.RESET_ALL
+            )
+
+    board[choice - 1] = symbol
 
 # ==========================================================
 # TODO 2: ai_move(board, ai_symbol, player_symbol)
 # ==========================================================
 def ai_move(board, ai_symbol, player_symbol):
 
-    # Try to win
-    for i in range(9):
-        if board[i] not in ['X', 'O']:
-            temp = board[:]
-            temp[i] = ai_symbol
+    # Try winning first
+    for position in range(9):
 
-            if check_win(temp, ai_symbol):
-                board[i] = ai_symbol
+        if board[position].isdigit():
+
+            temp_board = board.copy()
+
+            temp_board[position] = ai_symbol
+
+            if check_win(temp_board, ai_symbol):
+
+                board[position] = ai_symbol
+
                 return
 
-    # Try to block player
-    for i in range(9):
-        if board[i] not in ['X', 'O']:
-            temp = board[:]
-            temp[i] = player_symbol
+    # Try blocking the player
+    for position in range(9):
 
-            if check_win(temp, player_symbol):
-                board[i] = ai_symbol
+        if board[position].isdigit():
+
+            temp_board = board.copy()
+
+            temp_board[position] = player_symbol
+
+            if check_win(temp_board, player_symbol):
+
+                board[position] = ai_symbol
+
                 return
 
-    # Random move
-    empty_spots = []
+    # Pick a random available spot
+    available_positions = [
+        position for position in range(9)
+        if board[position].isdigit()
+    ]
 
-    for i in range(9):
-        if board[i] not in ['X', 'O']:
-            empty_spots.append(i)
+    selected_position = random.choice(available_positions)
 
-    choice = random.choice(empty_spots)
-    board[choice] = ai_symbol
+    board[selected_position] = ai_symbol
 
 # ==========================================================
 # TODO 3: check_win(board, symbol)
 # ==========================================================
 def check_win(board, symbol):
 
-    for combo in win_conditions:
+    for pattern in win_conditions:
+
         if (
-            board[combo[0]] == symbol and
-            board[combo[1]] == symbol and
-            board[combo[2]] == symbol
+            board[pattern[0]] ==
+            board[pattern[1]] ==
+            board[pattern[2]] ==
+            symbol
         ):
+
             return True
 
     return False
@@ -119,11 +141,7 @@ def check_win(board, symbol):
 # ==========================================================
 def check_full(board):
 
-    for cell in board:
-        if cell not in ['X', 'O']:
-            return False
-
-    return True
+    return all(not spot.isdigit() for spot in board)
 
 # ==========================================================
 # MAIN GAME (NOW WITH A FEW TODOs)
@@ -132,76 +150,109 @@ def tic_tac_toe():
 
     print(Fore.CYAN + "Welcome to Tic-Tac-Toe!" + Style.RESET_ALL)
 
-    # Ask player's name
-    name = input(Fore.GREEN + "Enter your name: " + Style.RESET_ALL).strip()
+    player_name = input(
+        Fore.GREEN + "Enter your name: " + Style.RESET_ALL
+    ).strip()
 
-    if name == "":
-        name = "Player"
+    if player_name == "":
+        player_name = "Player"
 
     while True:
 
-        # Initialize board
-        board = ['1','2','3','4','5','6','7','8','9']
+        board = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
 
-        # Get symbols
         player_symbol, ai_symbol = player_choice()
 
-        # Decide who starts
-        turn = "Player"
+        turn = 'Player'
 
-        while True:
+        game_active = True
+
+        while game_active:
 
             display_board(board)
 
-            if turn == "Player":
+            if turn == 'Player':
 
-                # Player move
                 player_move(board, player_symbol)
 
-                # Check win
                 if check_win(board, player_symbol):
-                    display_board(board)
-                    print(Fore.GREEN + f"{name} wins!" + Style.RESET_ALL)
-                    break
 
-                # Check tie
-                if check_full(board):
                     display_board(board)
-                    print(Fore.YELLOW + "It's a tie!" + Style.RESET_ALL)
-                    break
 
-                # Switch turn
-                turn = "AI"
+                    print(
+                        Fore.GREEN +
+                        f"Great job {player_name}! You won the game!"
+                        + Style.RESET_ALL
+                    )
+
+                    game_active = False
+
+                else:
+
+                    if check_full(board):
+
+                        display_board(board)
+
+                        print(
+                            Fore.YELLOW + "It's a tie!" + Style.RESET_ALL
+                        )
+
+                        break
+
+                    else:
+
+                        turn = 'AI'
 
             else:
 
-                # AI move
-                print(Fore.CYAN + "AI is making a move..." + Style.RESET_ALL)
+                print(
+                    Fore.CYAN + "AI is making its move..."
+                    + Style.RESET_ALL
+                )
+
                 ai_move(board, ai_symbol, player_symbol)
 
-                # Check AI win
                 if check_win(board, ai_symbol):
+
                     display_board(board)
-                    print(Fore.RED + "AI wins!" + Style.RESET_ALL)
-                    break
 
-                # Check tie
-                if check_full(board):
-                    display_board(board)
-                    print(Fore.YELLOW + "It's a tie!" + Style.RESET_ALL)
-                    break
+                    print(
+                        Fore.RED + "AI won this round!"
+                        + Style.RESET_ALL
+                    )
 
-                # Switch turn
-                turn = "Player"
+                    game_active = False
 
-        # Play again
-        again = input(
-            Fore.GREEN + "Play again? (yes/no): " + Style.RESET_ALL
-        ).strip().lower()
+                else:
 
-        if again != "yes":
-            print(Fore.CYAN + "Thanks for playing!" + Style.RESET_ALL)
-            return
+                    if check_full(board):
+
+                        display_board(board)
+
+                        print(
+                            Fore.YELLOW + "It's a tie!" + Style.RESET_ALL
+                        )
+
+                        break
+
+                    else:
+
+                        turn = 'Player'
+
+        play_again = input(
+            Fore.GREEN +
+            "Would you like to play again? (yes/no): "
+            + Style.RESET_ALL
+        ).lower()
+
+        if play_again != 'yes':
+
+            print(
+                Fore.CYAN + "Thanks for playing!" + Style.RESET_ALL
+            )
+
+            break
 
 if __name__ == "__main__":
-    tic_tac_toe()
+
+            tic_tac_toe()
