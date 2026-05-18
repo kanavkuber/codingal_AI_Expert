@@ -103,7 +103,6 @@ while True:
     elif agent_input.lower() == "reset":
         convo_list.clear()
         print(f"{Fore.CYAN} All of your conversation history has been wiped clean{Style.RESET_ALL}")
-        continue
 
     elif agent_input.lower() == "history":
         if not convo_list:
@@ -124,7 +123,6 @@ while True:
 
                 print(f"{index}. {color}{emoji} {text} "
                     f"Polarity: {polarity:.2f}, {sentiment_type}{Style.RESET_ALL}")
-        continue
 
     polarity = TextBlob(agent_input).sentiment.polarity
     if polarity > 0.25:
