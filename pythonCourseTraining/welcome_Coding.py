@@ -1,0 +1,5 @@
+print("Welcome to the world of Coding!")
+print(4)
+print ("Going to the next line \n")
+print ("Multiple arguements",3,"in this case")
+print ("End arguments ending the satement with ", end = "*")
